@@ -63,23 +63,24 @@ head(daily_sum)
 ## 6 2012-10-06       15420
 ```
 
-Let's plot a graph to get a better sense of how total steps taken changes from day to day. We use ggplot here.
+Let's plot a histogram of the total number of steps taken each day. We use ggplot here.
 
 ```r
 library(ggplot2)
 p1 <- 
-  ggplot(daily_sum, aes(as.Date(date),total_steps)) + 
-  geom_bar(stat='identity') +
-  labs(list(title="Daily Total Steps Taken",
-            x = "Date",
-            y = "Total Number of Steps"))
+  ggplot(daily_sum, aes(total_steps)) + 
+  geom_histogram(binwidth=1000,color="white") +
+  geom_rug() + 
+  labs(list(title="Histogram of Daily Total Steps Taken",
+            x = "Daily Total Number of Steps",
+            y = "Count"))
 
 p1
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
-Subsequently, we use the *summary* function on **total_steps** column of **daily_sum** dataframe. *summary* function gives a good overview
+Subsequently, we use the *summary* function on **total_steps** column of **daily_sum** dataframe to get an overview of the **total_steps**
 
 ```r
 summary(daily_sum$total_steps)
@@ -91,12 +92,12 @@ summary(daily_sum$total_steps)
 ```
 
 From the summary, the median is 10400, mean is 9354.
-The minumum total per day is 0 which it could be that, from the barplot, some days have no data reading due to syncing issues. 
+The minumum total per day is 0 which it could be that some days have no data reading due to syncing issues. 
 
-We can also adding the mean indication in the barplot.
+We can also adding the mean indication in the histogram
 
 ```r
-p1 + geom_hline(yintercept = mean(daily_sum$total_steps),
+p1 + geom_vline(xintercept = mean(daily_sum$total_steps),
                 color="blue",
                 size=1)
 ```
@@ -233,7 +234,7 @@ mean(is.na(activity$steps))
 There are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data. 
 
 Following is the snippet to impute NA values with mean steps of the same interval across Oct - Nov'12. 
-We are using *plyr::ddply* to first split **activity** dataframe by the **interval** and apply a funtion to assign mean of the interval to the NA entries and finally combine the splitted subset. 
+Using *split-apply-combine* strategy, we deploy *plyr::ddply* to first split **activity** dataframe by the **interval** and apply a funtion to assign mean of the interval to the NA entries and finally combine the splitted subset. 
 
 
 ```r
@@ -276,16 +277,16 @@ df_melted <- melt(df,
                   variable.name = "state",
                   value.name = "total_steps")
 
-p3 <- ggplot(df_melted, aes(as.Date(date),y= total_steps,fill=state)) 
+p3 <- ggplot(df_melted, aes(x=total_steps,fill=state)) 
 
-p3 + geom_bar(stat='identity',position = "dodge") +
-  labs(list(title="Daily Total Steps Taken",
-            x = "Date",
-            y = "Total Number of Steps"))
+p3 + geom_histogram(binwidth = 1000, position = "dodge") +
+  labs(list(title="Histogram of Daily Total Steps Taken",
+            x = "Daily Total Number of Steps",
+            y = "Count"))
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
-See that? After NA imputation, we believe the total steps taken are closer to reality. How about the change in mean and median? 
+See that? After NA imputation, the number of days having 0 total taken steps have dropped. How about the change in mean and median? 
 
 ```r
 summary(daily_sum$total_steps)
